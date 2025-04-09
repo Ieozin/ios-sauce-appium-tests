@@ -9,12 +9,15 @@
   },
   "name": "aula-2_primeiro_teste_ios",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "npx wdio run ./wdio.conf.cjs",
-    "test:login": "wdio run ./wdio.conf.js.login.conf.js --suite login",
-    "test:product": "wdio run ./wdio.conf.js.product.conf.js --suite product",
-    "test:search": "wdio run ./wdio.conf.js.search.conf.js --suite search"
+    "test": "wdio run ./config/wdio.conf.cjs",
+    "test:login": "wdio run ./config/wdio.conf.cjs --suite login",
+    "test:product": "wdio run ./config/wdio.conf.cjs --suite product",
+    "test:search": "wdio run ./config/wdio.conf.cjs --suite search",
+    "posttest": "npm run report",
+    "report": "allure generate allure-results"
   },
   "repository": {
     "type": "git",
@@ -29,6 +32,7 @@
   "homepage": "https://github.com/Ieozin/ios-sauce-appium-tests#readme",
   "description": "",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "saucelabs": "^9.0.2"
   }
 }
