@@ -10,7 +10,7 @@ export let sauceConf = {
       ? [
           {
             platformName: "Android",
-            "appium:app": "storage:filename=ebacshop (1).aab", // The filename of the mobile app
+            "appium:app": "storage:filename=ebacshop (1).aab",
             "appium:deviceName": "Samsung.*",
             "appium:platformVersion": "10",
             "appium:automationName": "UiAutomator2",
@@ -26,9 +26,8 @@ export let sauceConf = {
       : [
           {
             platformName: "iOS",
-            "appium:app": "storage:filename=LojaEBAC.ipa", // The filename of the mobile app
+            "appium:app": "storage:filename=LojaEBAC.ipa",
             "appium:deviceName": "iPhone XR",
-            // 'appium:platformVersion': '17',
             "appium:automationName": "XCUITest",
             "sauce:options": {
               build: "appium-build-teste-ebacshop-ios",
