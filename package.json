@@ -12,10 +12,10 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "wdio run ./config/wdio.conf.cjs",
-    "test:login": "wdio run ./config/wdio.conf.cjs --suite login",
-    "test:product": "wdio run ./config/wdio.conf.cjs --suite product",
-    "test:search": "wdio run ./config/wdio.conf.cjs --suite search",
+    "test": "wdio run ./config/wdio.conf.js",
+    "test:login": "wdio run ./config/wdio.conf.js --suite login",
+    "test:product": "wdio run ./config/wdio.conf.js --suite product",
+    "test:search": "wdio run ./config/wdio.conf.js --suite search",
     "posttest": "npm run report",
     "report": "allure generate allure-results"
   },
