@@ -1,5 +1,8 @@
 name: EBAC CI Mobile
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ci]
