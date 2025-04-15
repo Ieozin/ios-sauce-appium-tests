@@ -1,5 +1,8 @@
 name: EBAC CI Mobile
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ci]
@@ -11,23 +14,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
-          node-version: "21"
-      
+          node-version: "20"
+
       - name: Install Dependencies
         run: npm i
-      
+
       - name: Run BrowserStack Tests
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_APP_ID: ${{ secrets.BROWSERSTACK_APP_ID }}
           PLATFORM: "ios"
           ENVIRONMENT: "browserstack"
           REPORT: "true"
         run: npx wdio run ./config/wdio.conf.js
-      
+
+      - name: Generate Report
+        if: always()
+        run: npx allure generate allure-results -o allure-report
+
       - name: Publish Report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
