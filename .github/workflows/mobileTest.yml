@@ -1,32 +1,33 @@
 name: EBAC CI Mobile
 
-permissions:
-  contents: write
-
 on:
   push:
     branches: [ci]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   test:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: "21"
+      
       - name: Install Dependencies
         run: npm i
-      - name: Run Tests
-        run: npm t
+      
+      - name: Run BrowserStack Tests
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          PLATFORM: "ios"
+          ENVIRONMENT: "browserstack"
+          REPORT: "true"
+        run: npx wdio run ./config/wdio.conf.js
+      
       - name: Publish Report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
