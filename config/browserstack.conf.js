@@ -12,7 +12,7 @@ export let bsConf = {
         platformName: "iOS",
         projectName: "EBAC iOS Tests",
         buildName: "Build 1.0",
-        app: process.env.BROWSERSTACK_APP_ID,
+        app: "bs://f7b8a9b19318cae3a4d230bd8c254ca8878f396a",
       },
     },
   ],
