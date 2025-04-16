@@ -7,7 +7,11 @@ describe("Product Details", () => {
   it("should view product info", async () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
-    await (await browsePage.products).at(0).click();
+    await (await browsePage.products)[0].waitForExist({ timeout: 15000 });
+
+    await (
+      await productPage.getProductTitle("Ingrid Running Jacket")
+    ).waitForDisplayed({ timeout: 10000 });
     expect(
       productPage.getProductTitle("Ingrid Running Jacket")
     ).toBeDisplayed();

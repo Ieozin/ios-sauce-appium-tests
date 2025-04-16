@@ -15,6 +15,7 @@ describe("Checkout Flow", () => {
     await browsePage.searchInput.setValue("In");
     await (await browsePage.products)[0].click();
 
+    await productPage.addToCartButton.waitForDisplayed({ timeout: 15000 });
     await productPage.addToCartButton.click();
 
     await cartPage.proceedToCheckout();
