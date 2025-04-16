@@ -1,4 +1,4 @@
-import { expect } from "@wdio/globals";
+import { expect, $ } from "@wdio/globals";
 import homePage from "../pageobjects/home.page.js";
 import loginPage from "../pageobjects/login.page.js";
 import browsePage from "../pageobjects/browse.page.js";
@@ -13,7 +13,17 @@ describe("Checkout Flow", () => {
 
     await homePage.search();
     await browsePage.searchInput.setValue("In");
-    await (await browsePage.products)[0].click();
+
+    await browsePage.products.waitForExist({ timeout: 20000 });
+
+    const productList = await browsePage.products;
+    if (productList.length > 0) {
+      await productList[0].click();
+    } else {
+      throw new Error(
+        "Nenhum produto encontrado após a busca 'In' no teste de checkout."
+      );
+    }
 
     await productPage.addToCartButton.waitForDisplayed({ timeout: 15000 });
     await productPage.addToCartButton.click();
@@ -26,8 +36,11 @@ describe("Checkout Flow", () => {
     });
 
     await checkoutPage.completePayment();
-    await expect(
-      $('-ios predicate string:name == "orderConfirmation"')
-    ).toBeDisplayed();
+
+    const orderConfirmationElement = $(
+      '-ios predicate string:name == "orderConfirmation"'
+    );
+    await orderConfirmationElement.waitForDisplayed({ timeout: 20000 });
+    await expect(orderConfirmationElement).toBeDisplayed();
   });
 });

@@ -9,8 +9,8 @@ describe("My Login application", () => {
     await homePage.openMenu(profileTab);
     await loginPage.login("cliente@ebac.art.br", "GD*peToHNJ1#c$sgk08EaYJQ");
     await homePage.openMenu(profileTab);
-    expect(
-      (await profilePage.profileName("EBAC Cliente")).isDisplayed()
-    ).toBeTruthy();
+
+    await profilePage.customerNameElement.waitForDisplayed({ timeout: 20000 });
+    expect(await profilePage.customerNameElement.isDisplayed()).toBeTruthy();
   });
 });
