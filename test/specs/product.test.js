@@ -9,7 +9,7 @@ describe("Product Details", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await browsePage.products.waitForExist({ timeout: 20000 });
+    await $('-ios predicate string:name == "productDetails"').waitForExist({ timeout: 20000 });
 
     const productList = await browsePage.products;
     if (productList.length > 0) {

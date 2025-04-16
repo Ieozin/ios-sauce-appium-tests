@@ -6,7 +6,7 @@ class BrowsePage {
   }
 
   get products() {
-    return $$(`-ios predicate string:name == "productDetails"`);
+    return $$('-ios predicate string:name == "productDetails"');
   }
 }
 
