@@ -1,6 +1,6 @@
 import { localConf } from "./local.conf.js";
 import { sauceConf } from "./sauce.conf.js";
-import { bsConf } from "./browserstack.conf.js";
+import { bsConf } from "./bs.conf.js";
 
 import "dotenv/config";
 

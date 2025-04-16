@@ -2,7 +2,7 @@ import { generalConf } from "./general.conf.js";
 export let bsConf = {
   user: process.env.BROWSERSTACK_USERNAME,
   key: process.env.BROWSERSTACK_ACCESS_KEY,
-  hostname: "hub.browserstack.com",
+  hostname: "hub-cloud.browserstack.com",
   capabilities:
     process.env.PLATFORM === "android"
       ? [
