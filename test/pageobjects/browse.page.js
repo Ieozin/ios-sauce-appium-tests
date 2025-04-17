@@ -6,9 +6,7 @@ class BrowsePage {
   }
 
   get products() {
-    return $$(
-      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
-    );
+    return $$(`~productDetails`);
   }
 }
 

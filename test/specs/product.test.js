@@ -8,16 +8,14 @@ describe("Product Details", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await $(
-      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
-    ).waitForExist({ timeout: 20000 });
+    await $(`~productDetails`).waitForExist({ timeout: 20000 });
 
     const productList = await browsePage.products;
     if (productList.length > 0) {
       await productList[0].click();
     } else {
       throw new Error(
-        "Nenhum produto encontrado após a busca 'In' no teste de produto."
+        "Nenhum produto encontrado com ID 'productDetails' após a busca 'In'."
       );
     }
 

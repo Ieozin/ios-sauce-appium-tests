@@ -22,9 +22,7 @@ describe("Search", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await $(
-      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
-    ).waitForExist({ timeout: 20000 });
+    await $(`~productDetails`).waitForExist({ timeout: 20000 });
 
     const productsList = await browsePage.products;
     expect(productsList.length).toBeGreaterThan(0);

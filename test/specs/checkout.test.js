@@ -14,16 +14,14 @@ describe("Checkout Flow", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await $(
-      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
-    ).waitForExist({ timeout: 20000 });
+    await $(`~productDetails`).waitForExist({ timeout: 20000 });
 
     const productList = await browsePage.products;
     if (productList.length > 0) {
       await productList[0].click();
     } else {
       throw new Error(
-        "Nenhum produto encontrado após a busca 'In' no teste de checkout."
+        "Nenhum produto encontrado com ID 'productDetails' após a busca 'In'."
       );
     }
 
@@ -31,7 +29,6 @@ describe("Checkout Flow", () => {
     await productPage.addToCartButton.click();
 
     await cartPage.proceedToCheckout();
-
     await checkoutPage.addAddressButton.waitForDisplayed({ timeout: 15000 });
     await checkoutPage.addNewAddress({
       street: "Rua EBAC 123",
