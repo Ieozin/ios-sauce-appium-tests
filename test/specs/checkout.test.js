@@ -14,7 +14,9 @@ describe("Checkout Flow", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await $('-ios predicate string:name == "productDetails"').waitForExist({ timeout: 20000 });
+    await $(
+      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
+    ).waitForExist({ timeout: 20000 });
 
     const productList = await browsePage.products;
     if (productList.length > 0) {
@@ -29,6 +31,8 @@ describe("Checkout Flow", () => {
     await productPage.addToCartButton.click();
 
     await cartPage.proceedToCheckout();
+
+    await checkoutPage.addAddressButton.waitForDisplayed({ timeout: 15000 });
     await checkoutPage.addNewAddress({
       street: "Rua EBAC 123",
       city: "São Paulo",

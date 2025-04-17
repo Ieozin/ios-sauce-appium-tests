@@ -1,5 +1,4 @@
-// L:\Repositorio\EBAC\12-_Testando_Aplicações_iOS\Aula-2_Primeiro_teste_iOS\test\specs\product.test.js
-import { expect } from "@wdio/globals";
+import { expect, $ } from "@wdio/globals";
 import homePage from "../pageobjects/home.page.js";
 import browsePage from "../pageobjects/browse.page.js";
 import productPage from "../pageobjects/product.page.js";
@@ -9,7 +8,9 @@ describe("Product Details", () => {
     await homePage.search();
     await browsePage.searchInput.setValue("In");
 
-    await $('-ios predicate string:name == "productDetails"').waitForExist({ timeout: 20000 });
+    await $(
+      '-ios class chain:**/XCUIElementTypeOther[`name CONTAINS "teste"`]'
+    ).waitForExist({ timeout: 20000 });
 
     const productList = await browsePage.products;
     if (productList.length > 0) {
