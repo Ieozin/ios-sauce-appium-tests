@@ -6,25 +6,24 @@ describe("Search", () => {
   beforeEach(async () => {
     let state = await driver.queryAppState("br.com.lojaebac");
     if (state !== 4) {
-      await driver.execute("mobile: launchApp", {
-        bundleId: "br.com.lojaebac",
-      });
+      await driver.launchApp();
     }
+
+    await homePage.search();
+    await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
   });
 
   afterEach(async () => {
-    await driver.execute("mobile: terminateApp", {
-      bundleId: "br.com.lojaebac",
-    });
+    await driver.terminateApp("br.com.lojaebac");
   });
 
   it("should search products", async () => {
-    await homePage.search();
-    await browsePage.searchInput.setValue("In");
+    await browsePage.searchInput.setValue("Camiseta");
+    await browser.pause(1000);
 
-    await $(`~productDetails`).waitForExist({ timeout: 20000 });
+    await $(`~productDetails`).waitForExist({ timeout: 15000 });
 
     const productsList = await browsePage.products;
-    expect(productsList.length).toBeGreaterThan(0);
+    await expect(productsList.length).toBeGreaterThan(0);
   });
 });

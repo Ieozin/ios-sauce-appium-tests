@@ -8,7 +8,7 @@ describe("My Login application", () => {
     let profileTab = driver.isAndroid ? "profile" : "Account";
     await homePage.openMenu(profileTab);
     await loginPage.login("cliente@ebac.art.br", "GD*peToHNJ1#c$sgk08EaYJQ");
-    await homePage.openMenu(profileTab);
+    await homePage.openMenu(profileTab); // Reabre para verificar se logou
 
     await profilePage.customerNameElement.waitForDisplayed({ timeout: 20000 });
     expect(await profilePage.customerNameElement.isDisplayed()).toBeTruthy();
