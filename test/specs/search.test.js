@@ -8,18 +8,19 @@ describe("Search", () => {
     if (state !== 4) {
       await driver.launchApp();
     }
-
     await homePage.search();
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
+
+    await browsePage.searchInput.clearValue();
   });
 
   afterEach(async () => {
     await driver.terminateApp("br.com.lojaebac");
   });
 
-  it("should search products", async () => {
-    await browsePage.searchInput.setValue("Camiseta");
-    await browser.pause(1000);
+  it("should search products with 'Teste Exercicio'", async () => {
+    await browsePage.searchInput.setValue("Teste Exercicio");
+    await browser.pause(2000);
 
     await $(`~productDetails`).waitForExist({ timeout: 15000 });
 
