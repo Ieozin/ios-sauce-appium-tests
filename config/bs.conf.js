@@ -20,7 +20,7 @@ export let bsConf = {
             "appium:deviceName": "iPhone 15",
             "appium:platformVersion": "17",
             "appium:automationName": "XCUITest",
-            "appium:app": "bs://f7b8a9b19318cae3a4d230bd8c254ca8878f396a",
+            "appium:app": "bs://ea0c67060899e253a543f209581cc2d3ab59f162",
           },
         ],
   commonCapabilities: {
