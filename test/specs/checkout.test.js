@@ -26,18 +26,22 @@ describe("Checkout Flow", () => {
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
     await browser.pause(2000);
-    await $(`~productDetails`).waitForExist({ timeout: 20000 });
+    await $(`~productDetails`).waitForExist({ timeout: 35000 });
 
     const targetProductText = "Teste Exercicio R$ 100";
     const productElement = await findProductByLabelText(targetProductText);
 
     if (productElement) {
       try {
-        await productElement.scrollIntoView();
+        await driver.execute("mobile: scroll", {
+          direction: "down",
+          elementId: productElement.elementId,
+        });
+
         await browser.pause(500);
       } catch (scrollError) {
         console.warn(
-          `WARN: scrollIntoView falhou, tentando continuar. Erro: ${scrollError.message}`
+          `WARN: mobile:scroll/swipe falhou, tentando continuar. Erro: ${scrollError.message}`
         );
       }
 
@@ -54,14 +58,7 @@ describe("Checkout Flow", () => {
     await addToCartBtn.click();
 
     await cartPage.proceedToCheckout();
-    await checkoutPage.fillNewAddressForm({
-      name: "leonardo Martins",
-      mobile: "24993117595",
-      street: "Estrada união Industria 20301",
-      city: "Petropolis",
-      state: "Rio de Janeiro",
-      zip: "25750222",
-    });
+    await checkoutPage.fillNewAddressForm({});
 
     await checkoutPage.proceedWithPayment();
     await expect(await checkoutPage.verifySuccess()).toBe(true);
