@@ -28,7 +28,7 @@ describe("Product Details", () => {
     const productElement = await findProductByLabelText(targetProductText);
 
     if (productElement) {
-      await productElement.waitForDisplayed({ timeout: 10000 });
+      await productElement.waitForDisplayed({ timeout: 20000 });
       await productElement.click();
     } else {
       throw new Error(

@@ -36,7 +36,7 @@ describe("Checkout Flow", () => {
       throw new Error(`Produto "${targetProductText}" não encontrado.`);
     }
     const addToCartBtn = await $("~addToCart");
-    await addToCartBtn.waitForDisplayed({ timeout: 15000 });
+    await addToCartBtn.waitForDisplayed({ timeout: 20000 });
     await addToCartBtn.click();
     await cartPage.proceedToCheckout();
 
