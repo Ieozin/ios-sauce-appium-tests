@@ -21,7 +21,6 @@ describe("Checkout Flow", () => {
   it("should complete purchase with 'Teste Exercicio R$ 100'", async () => {
     await homePage.openMenu("Account");
     await loginPage.login("cliente@ebac.art.br", "GD*peToHNJ1#c$sgk08EaYJQ");
-
     await homePage.search();
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
     await browsePage.searchInput.clearValue();
@@ -36,11 +35,9 @@ describe("Checkout Flow", () => {
     } else {
       throw new Error(`Produto "${targetProductText}" não encontrado.`);
     }
-
     const addToCartBtn = await $("~addToCart");
     await addToCartBtn.waitForDisplayed({ timeout: 15000 });
     await addToCartBtn.click();
-
     await cartPage.proceedToCheckout();
 
     await checkoutPage.fillNewAddressForm({
@@ -52,12 +49,8 @@ describe("Checkout Flow", () => {
       zip: "25750222",
     });
 
-    await checkoutPage.clickPaymentButton();
+    await checkoutPage.proceedWithPayment();
 
-    const orderConfirmationElement = $(
-      '-ios predicate string:name == "orderConfirmation"'
-    );
-    await orderConfirmationElement.waitForDisplayed({ timeout: 20000 });
-    await expect(orderConfirmationElement).toBeDisplayed();
+    await expect(await checkoutPage.verifySuccess()).toBe(true);
   });
 });
