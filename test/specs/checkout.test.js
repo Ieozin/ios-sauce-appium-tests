@@ -6,105 +6,42 @@ import productPage from "../pageobjects/product.page.js";
 import cartPage from "../pageobjects/cart.page.js";
 import checkoutPage from "../pageobjects/checkout.page.js";
 
-async function findAndScrollToProduct(searchText) {
-  const MAX_SWIPES = 5;
-  let productElement = null;
-
-  for (let i = 0; i < MAX_SWIPES; i++) {
-    const productList = await $$(`~productDetails`);
-    console.log(
-      `[findAndScrollToProduct] Tentativa ${i + 1}: ${
-        productList.length
-      } produtos na tela.`
-    );
-
-    for (const product of productList) {
-      const label = await product.getAttribute("label");
-      if (label && label.includes(searchText)) {
-        if (await product.isDisplayed()) {
-          console.log(
-            `[findAndScrollToProduct] Produto "${searchText}" encontrado e visível.`
-          );
-          return product;
-        } else {
-          console.log(
-            `[findAndScrollToProduct] Produto "${searchText}" encontrado no DOM, mas não visível ainda. Tentando rolar.`
-          );
-          productElement = product;
-        }
-      }
-    }
-
-    if (i < MAX_SWIPES - 1) {
-      console.log(
-        `[findAndScrollToProduct] Produto "${searchText}" não visível, tentando swipe para cima...`
-      );
-      try {
-        await driver.execute("mobile: swipe", { direction: "up" });
-        await browser.pause(1000);
-      } catch (swipeError) {
-        console.warn(
-          `WARN: mobile:swipe falhou. Tentando continuar.`,
-          swipeError.message
-        );
-
-        break;
-      }
-    }
-  }
-
-  if (productElement) {
-    console.log(
-      `[findAndScrollToProduct] Tentando usar a referência encontrada após swipes.`
-    );
-
-    if (await productElement.isDisplayed()) {
-      return productElement;
-    } else {
-      console.warn(
-        `[findProductByLabelText] Elemento encontrado mas não ficou visível mesmo após swipes.`
-      );
-    }
-  }
-
-  console.log(
-    `[findProductByLabelText] Produto "${searchText}" não encontrado ou não ficou visível após ${MAX_SWIPES} swipes.`
-  );
-  return null;
-}
+import { findAndClickProductByLabel } from "../helpers/actionUtils.js";
 
 describe("Checkout Flow", () => {
   it("should complete purchase with 'Teste Exercicio R$ 100'", async () => {
+    // --- Login ---
     await homePage.openMenu("Account");
     await loginPage.login("cliente@ebac.art.br", "GD*peToHNJ1#c$sgk08EaYJQ");
 
+    // --- Busca ---
     await homePage.search();
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
     await browser.pause(2000);
 
-    const targetProductText = "Teste Exercicio R$ 100";
-
     await browser.waitUntil(
       async () => (await $$("~productDetails")).length > 0,
-      { timeout: 35000, timeoutMsg: "Lista (~productDetails) não apareceu." }
+      {
+        timeout: 35000,
+        timeoutMsg: "Lista de produtos (~productDetails) não apareceu após 35s",
+      }
     );
-    const productElement = await findAndScrollToProduct(targetProductText);
+    console.log("Lista de produtos (~productDetails) inicial encontrada.");
 
-    if (productElement) {
-      console.log(
-        `Produto "${targetProductText}" encontrado e visível, clicando...`
-      );
+    const targetProductText = "Teste Exercicio R$ 100";
 
-      await productElement.click();
-      console.log(`Clicou no produto "${targetProductText}".`);
-    } else {
+    const clicked = await findAndClickProductByLabel(targetProductText);
+
+    if (!clicked) {
       throw new Error(
-        `Produto com texto "${targetProductText}" não encontrado ou não visível após scroll.`
+        `FALHA: Não foi possível encontrar e clicar no produto "${targetProductText}" após tentativas de scroll.`
       );
     }
+    console.log(`Produto "${targetProductText}" clicado com sucesso.`);
 
+    // --- Adicionar ao Carrinho ---
     console.log("Procurando botão Add to Cart...");
     const addToCartBtn = await $("~addToCart");
     await addToCartBtn.waitForDisplayed({ timeout: 15000 });
@@ -112,11 +49,20 @@ describe("Checkout Flow", () => {
     console.log("Clicou em Add to Cart.");
 
     await cartPage.proceedToCheckout();
-    await checkoutPage.fillNewAddressForm({});
+
+    await checkoutPage.fillNewAddressForm({
+      name: "leonardo Martins",
+      mobile: "24993117595",
+      street: "Estrada união Industria 20301",
+      city: "Petropolis",
+      state: "Rio de Janeiro",
+      zip: "25750222",
+    });
     console.log("Endereço preenchido e salvo.");
 
     await checkoutPage.proceedWithPayment();
     console.log("Prosseguiu para pagamento.");
+
     await expect(await checkoutPage.verifySuccess()).toBe(true);
     console.log("Compra verificada com sucesso.");
   });
