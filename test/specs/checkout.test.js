@@ -27,19 +27,33 @@ describe("Checkout Flow", () => {
     await browsePage.searchInput.setValue("Teste Exercicio");
     await browser.pause(2000);
     await $(`~productDetails`).waitForExist({ timeout: 20000 });
+
     const targetProductText = "Teste Exercicio R$ 100";
     const productElement = await findProductByLabelText(targetProductText);
+
     if (productElement) {
-      await productElement.waitForDisplayed({ timeout: 10000 });
+      try {
+        await productElement.scrollIntoView();
+        await browser.pause(500);
+      } catch (scrollError) {
+        console.warn(
+          `WARN: scrollIntoView falhou, tentando continuar. Erro: ${scrollError.message}`
+        );
+      }
+
+      await productElement.waitForDisplayed({ timeout: 20000 });
       await productElement.click();
     } else {
-      throw new Error(`Produto "${targetProductText}" não encontrado.`);
+      throw new Error(
+        `Produto com texto "${targetProductText}" não encontrado na lista após a busca.`
+      );
     }
-    const addToCartBtn = await $("~addToCart");
-    await addToCartBtn.waitForDisplayed({ timeout: 20000 });
-    await addToCartBtn.click();
-    await cartPage.proceedToCheckout();
 
+    const addToCartBtn = await $("~addToCart");
+    await addToCartBtn.waitForDisplayed({ timeout: 15000 });
+    await addToCartBtn.click();
+
+    await cartPage.proceedToCheckout();
     await checkoutPage.fillNewAddressForm({
       name: "leonardo Martins",
       mobile: "24993117595",
@@ -50,7 +64,6 @@ describe("Checkout Flow", () => {
     });
 
     await checkoutPage.proceedWithPayment();
-
     await expect(await checkoutPage.verifySuccess()).toBe(true);
   });
 });

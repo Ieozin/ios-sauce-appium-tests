@@ -28,6 +28,15 @@ describe("Product Details", () => {
     const productElement = await findProductByLabelText(targetProductText);
 
     if (productElement) {
+      try {
+        await productElement.scrollIntoView();
+        await browser.pause(500);
+      } catch (scrollError) {
+        console.warn(
+          `WARN: scrollIntoView falhou, tentando continuar. Erro: ${scrollError.message}`
+        );
+      }
+
       await productElement.waitForDisplayed({ timeout: 20000 });
       await productElement.click();
     } else {
@@ -37,7 +46,6 @@ describe("Product Details", () => {
     }
 
     const productTitleElement = await $("~Teste Exercicio");
-
     await productTitleElement.waitForDisplayed({ timeout: 20000 });
     expect(await productTitleElement.isDisplayed()).toBeTruthy();
 
