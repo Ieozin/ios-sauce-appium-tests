@@ -5,66 +5,53 @@ import browsePage from "../pageobjects/browse.page.js";
 describe("Product Details", () => {
   it("should view 'Teste Exercicio R$ 100' info", async () => {
     await homePage.search();
-    await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
+    await browsePage.searchInput.waitForDisplayed({ timeout: 15000 });
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
     console.log("Busca por 'Teste Exercicio' realizada.");
-
-    await browser.pause(2000);
+    await browser.pause(2500);
 
     const targetProductText = "Teste Exercicio R$ 100";
-    const productSelector = `-ios predicate string:type == "XCUIElementTypeOther" AND name == "productDetails" AND label CONTAINS "${targetProductText}"`;
+    const productTextSelector = `**/XCUIElementTypeOther[\`name == "productDetails"\`]/**/XCUIElementTypeStaticText[\`label CONTAINS "${targetProductText}"\`]`;
     console.log(
-      `[SCROLL] Iniciando busca por elemento visível: ${productSelector}`
+      `[CHAIN] Iniciando busca por texto visível: ${productTextSelector}`
     );
 
     let visibleProductElement = null;
-    const maxScrolls = 5;
+    const maxAttempts = 6;
 
-    for (let i = 0; i <= maxScrolls; i++) {
-      console.log(`[SCROLL] Tentativa ${i + 1}/${maxScrolls + 1}`);
-      const potentialElements = await $$(productSelector);
-      console.log(
-        `[SCROLL] Elementos encontrados nesta view: ${potentialElements.length}`
-      );
-
-      for (const element of potentialElements) {
-        try {
-          if (await element.isDisplayed()) {
-            console.log(
-              `[SCROLL] Elemento visível encontrado! ID: ${element.elementId}`
-            );
-            visibleProductElement = element;
-            break;
-          }
-        } catch (e) {
-          console.warn(
-            `[SCROLL] Erro ao verificar visibilidade do elemento ${element.elementId}: ${e.message}`
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`[CHAIN] Tentativa ${attempt}/${maxAttempts}`);
+      try {
+        visibleProductElement = await $(productTextSelector);
+        if (
+          (await visibleProductElement.isExisting()) &&
+          (await visibleProductElement.isDisplayed())
+        ) {
+          console.log(`[CHAIN] Texto visível encontrado!`);
+          break;
+        } else {
+          console.log(
+            `[CHAIN] Texto encontrado, mas não visível ou não existe.`
           );
+          visibleProductElement = null;
         }
+      } catch (e) {
+        console.log(`[CHAIN] Texto não encontrado na tentativa ${attempt}.`);
+        visibleProductElement = null;
       }
 
-      if (visibleProductElement) {
-        break;
-      }
-
-      if (i < maxScrolls) {
-        console.log(
-          `[SCROLL] Nenhum elemento visível encontrado. Rolando para baixo...`
-        );
+      if (!visibleProductElement && attempt < maxAttempts) {
+        console.log(`[CHAIN] Fazendo SWIPE para baixo...`);
         try {
-          await driver.execute("mobile: scroll", { direction: "down" });
-          await browser.pause(4000);
-        } catch (scrollError) {
+          await driver.execute("mobile: swipe", { direction: "up" });
+          await browser.pause(2500);
+        } catch (swipeError) {
           console.error(
-            `[SCROLL] Erro durante o scroll: ${scrollError.message}. Interrompendo scroll.`
+            `[SWIPE] Erro durante o swipe: ${swipeError.message}. Interrompendo.`
           );
           break;
         }
-      } else {
-        console.log(
-          `[SCROLL] Número máximo de scrolls atingido (${maxScrolls}).`
-        );
       }
     }
 
@@ -88,15 +75,28 @@ describe("Product Details", () => {
         `-------------------------------------------------------------`
       );
       throw new Error(
-        `Elemento visível "${targetProductText}" não encontrado após ${maxScrolls} tentativas de scroll.`
+        `Elemento de TEXTO visível "${targetProductText}" não encontrado após ${
+          maxAttempts - 1
+        } swipes.`
       );
     }
 
-    console.log(
-      `Elemento "${targetProductText}" visível encontrado. Clicando...`
-    );
-    await visibleProductElement.click();
-    console.log(`Clicou no produto "${targetProductText}".`);
+    console.log(`Texto encontrado. Tentando clicar no container pai...`);
+    let productContainer = null;
+    try {
+      const containerSelector = `//XCUIElementTypeStaticText[contains(@label, "${targetProductText}")]/ancestor::XCUIElementTypeOther[@name="productDetails"]`;
+      productContainer = await $(containerSelector);
+      await productContainer.waitForExist({ timeout: 5000 });
+      await productContainer.click();
+      console.log(`Clicou no container do produto "${targetProductText}".`);
+    } catch (clickError) {
+      console.error(
+        `Falha ao clicar no container do produto: ${clickError.message}`
+      );
+      throw new Error(
+        `Não foi possível clicar no container do produto "${targetProductText}".`
+      );
+    }
 
     console.log("Verificando tela de detalhes (título)...");
     const productTitleElement = await $("~Teste Exercicio");
