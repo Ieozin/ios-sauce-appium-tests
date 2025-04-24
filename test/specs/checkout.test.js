@@ -14,62 +14,27 @@ describe("Checkout Flow", () => {
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
-
     await browsePage.searchInput.click();
     await browser.pause(2500);
 
     const targetProductText = "Teste Exercicio R$ 100";
-
     const productSelector = `-ios predicate string:type == "XCUIElementTypeOther" AND name == "productDetails" AND label CONTAINS "${targetProductText}"`;
-    let productElement = $(productSelector);
-    let foundAndClicked = false;
-    const maxAttempts = 5;
+    console.log(`Procurando elemento: ${productSelector}`);
+    const productElement = await $(productSelector);
 
-    console.log(`Tentando encontrar e clicar em: ${productSelector}`);
+    await productElement.waitForExist({ timeout: 30000 });
+    await productElement.waitForDisplayed({ timeout: 20000 });
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`Tentativa ${attempt}/${maxAttempts}...`);
-      try {
-        await productElement.waitForExist({ timeout: 10000 });
-        console.log(
-          `Elemento encontrado na árvore (tentativa ${attempt}). Verificando visibilidade...`
-        );
+    console.log(
+      `Elemento "${targetProductText}" encontrado e visível. Clicando...`
+    );
+    await productElement.click();
+    console.log(`Clicou no produto "${targetProductText}".`);
 
-        await productElement.waitForDisplayed({ timeout: 10000 });
-        console.log(
-          `Elemento visível (tentativa ${attempt}). Tentando clicar...`
-        );
-
-        await productElement.click();
-        console.log(`CLICOU com sucesso (tentativa ${attempt}).`);
-        foundAndClicked = true;
-        break;
-      } catch (error) {
-        console.warn(`WARN: Tentativa ${attempt} falhou - ${error.message}`);
-        if (attempt < maxAttempts) {
-          console.log(`Tentando swipe para cima (scroll down)...`);
-          try {
-            await driver.execute("mobile: swipe", { direction: "up" });
-            await browser.pause(1500);
-
-            productElement = $(productSelector);
-          } catch (swipeError) {
-            console.warn("WARN: mobile:swipe falhou.", swipeError.message);
-            break;
-          }
-        }
-      }
-    }
-
-    if (!foundAndClicked) {
-      throw new Error(
-        `FALHA CRÍTICA: Não foi possível encontrar e clicar no produto "${targetProductText}" após ${maxAttempts} tentativas.`
-      );
-    }
-
-    console.log("Procurando botão Add to Cart na tela de detalhes...");
+    console.log("Esperando tela de detalhes carregar (botão Add to Cart)...");
     const addToCartBtn = await $("~addToCart");
-    await addToCartBtn.waitForDisplayed({ timeout: 15000 });
+    await addToCartBtn.waitForDisplayed({ timeout: 20000 });
+    console.log("Botão Add to Cart encontrado. Clicando...");
     await addToCartBtn.click();
     console.log("Clicou em Add to Cart.");
 
