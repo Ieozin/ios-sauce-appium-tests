@@ -20,7 +20,7 @@ describe("Checkout Flow", () => {
     await browsePage.searchInput.setValue("Teste Exercicio");
     console.log("Busca por 'Teste Exercicio' realizada.");
 
-    await browser.pause(2000);
+    await browser.pause(4000);
 
     const targetProductText = "Teste Exercicio R$ 100";
     const productSelector = `-ios predicate string:type == "XCUIElementTypeOther" AND name == "productDetails" AND label CONTAINS "${targetProductText}"`;

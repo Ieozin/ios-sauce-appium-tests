@@ -54,7 +54,7 @@ describe("Product Details", () => {
         );
         try {
           await driver.execute("mobile: scroll", { direction: "down" });
-          await browser.pause(1500);
+          await browser.pause(4000);
         } catch (scrollError) {
           console.error(
             `[SCROLL] Erro durante o scroll: ${scrollError.message}. Interrompendo scroll.`

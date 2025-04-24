@@ -28,6 +28,7 @@ export let bsConf = {
       projectName: "BrowserStack EBAC",
       buildName: "browserstack build",
       sessionName: `Test ${process.env.PLATFORM}`,
+      networkLogs: true
     },
   },
   ...generalConf,
