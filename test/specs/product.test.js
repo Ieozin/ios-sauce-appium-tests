@@ -8,66 +8,97 @@ describe("Product Details", () => {
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
-
     console.log("Busca por 'Teste Exercicio' realizada.");
+
     await browser.pause(2000);
 
     const targetProductText = "Teste Exercicio R$ 100";
     const productSelector = `-ios predicate string:type == "XCUIElementTypeOther" AND name == "productDetails" AND label CONTAINS "${targetProductText}"`;
-    console.log(`Procurando elemento visível: ${productSelector}`);
+    console.log(
+      `[SCROLL] Iniciando busca por elemento visível: ${productSelector}`
+    );
 
-    let productElement = null;
+    let visibleProductElement = null;
     const maxScrolls = 5;
-    let foundVisible = false;
 
     for (let i = 0; i <= maxScrolls; i++) {
+      console.log(`[SCROLL] Tentativa ${i + 1}/${maxScrolls + 1}`);
       const potentialElements = await $$(productSelector);
       console.log(
-        `Tentativa ${i + 1}: Encontrados ${potentialElements.length} elementos.`
+        `[SCROLL] Elementos encontrados nesta view: ${potentialElements.length}`
       );
 
-      for (const elem of potentialElements) {
+      for (const element of potentialElements) {
         try {
-          if (await elem.isDisplayed()) {
-            productElement = elem;
-            foundVisible = true;
-            console.log(`Elemento visível encontrado na tentativa ${i + 1}!`);
+          if (await element.isDisplayed()) {
+            console.log(
+              `[SCROLL] Elemento visível encontrado! ID: ${element.elementId}`
+            );
+            visibleProductElement = element;
             break;
           }
         } catch (e) {
-          console.warn(`Erro ao verificar visibilidade: ${e.message}`);
+          console.warn(
+            `[SCROLL] Erro ao verificar visibilidade do elemento ${element.elementId}: ${e.message}`
+          );
         }
       }
 
-      if (foundVisible) {
+      if (visibleProductElement) {
         break;
       }
 
       if (i < maxScrolls) {
         console.log(
-          `Nenhum visível, rolando para baixo (Tentativa ${
-            i + 1
-          }/${maxScrolls})...`
+          `[SCROLL] Nenhum elemento visível encontrado. Rolando para baixo...`
         );
-        await driver.execute("mobile: scroll", { direction: "down" });
-        await browser.pause(1500);
+        try {
+          await driver.execute("mobile: scroll", { direction: "down" });
+          await browser.pause(1500);
+        } catch (scrollError) {
+          console.error(
+            `[SCROLL] Erro durante o scroll: ${scrollError.message}. Interrompendo scroll.`
+          );
+          break;
+        }
+      } else {
+        console.log(
+          `[SCROLL] Número máximo de scrolls atingido (${maxScrolls}).`
+        );
       }
     }
 
-    if (!productElement || !foundVisible) {
+    if (!visibleProductElement) {
+      const allProductDetails = await $$("~productDetails");
+      console.error(
+        `--- DEBUG: Elementos ~productDetails visíveis na tela final ---`
+      );
+      for (const pd of allProductDetails) {
+        try {
+          if (await pd.isDisplayed()) {
+            console.error(
+              ` - Visível: ID=${pd.elementId}, Label=${await pd.getAttribute(
+                "label"
+              )}`
+            );
+          }
+        } catch (e) {}
+      }
+      console.error(
+        `-------------------------------------------------------------`
+      );
       throw new Error(
-        `Elemento "${targetProductText}" não encontrado ou não visível após ${maxScrolls} tentativas de scroll.`
+        `Elemento visível "${targetProductText}" não encontrado após ${maxScrolls} tentativas de scroll.`
       );
     }
 
     console.log(
       `Elemento "${targetProductText}" visível encontrado. Clicando...`
     );
-    await productElement.click();
+    await visibleProductElement.click();
     console.log(`Clicou no produto "${targetProductText}".`);
 
     console.log("Verificando tela de detalhes (título)...");
-
     const productTitleElement = await $("~Teste Exercicio");
     await productTitleElement.waitForDisplayed({ timeout: 20000 });
     await expect(productTitleElement).toBeDisplayed();
