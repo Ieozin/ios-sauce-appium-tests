@@ -8,9 +8,11 @@ describe("My Login application", () => {
     let profileTab = driver.isAndroid ? "profile" : "Account";
     await homePage.openMenu(profileTab);
     await loginPage.login("cliente@ebac.art.br", "GD*peToHNJ1#c$sgk08EaYJQ");
-    await homePage.openMenu(profileTab); 
+    await homePage.openMenu(profileTab);
 
-    await profilePage.customerNameElement.waitForDisplayed({ timeout: 20000 });
-    expect(await profilePage.customerNameElement.isDisplayed()).toBeTruthy();
+    await expect(profilePage.customerNameElement).toBeDisplayed({
+      wait: 20000,
+    });
+    console.log("Login verificado com sucesso.");
   });
 });

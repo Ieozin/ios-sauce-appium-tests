@@ -1,4 +1,4 @@
-import { expect, driver, $ } from "@wdio/globals";
+import { expect, driver, $, $$ } from "@wdio/globals";
 import homePage from "../pageobjects/home.page.js";
 import browsePage from "../pageobjects/browse.page.js";
 
@@ -10,7 +10,6 @@ describe("Search", () => {
     }
     await homePage.search();
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
-
     await browsePage.searchInput.clearValue();
   });
 
@@ -20,11 +19,20 @@ describe("Search", () => {
 
   it("should search products with 'Teste Exercicio'", async () => {
     await browsePage.searchInput.setValue("Teste Exercicio");
-    await browser.pause(2000);
 
-    await $(`~productDetails`).waitForExist({ timeout: 15000 });
+    await browser.waitUntil(
+      async () => (await $$("~productDetails")).length > 0,
+      {
+        timeout: 20000,
+        timeoutMsg:
+          'Nenhum produto (~productDetails) encontrado após busca por "Teste Exercicio"',
+      }
+    );
 
     const productsList = await browsePage.products;
     await expect(productsList.length).toBeGreaterThan(0);
+    console.log(
+      `Busca por "Teste Exercicio" retornou ${productsList.length} produtos.`
+    );
   });
 });
