@@ -9,40 +9,54 @@ describe("Product Details", () => {
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
     console.log("Busca por 'Teste Exercicio' realizada.");
-    await browser.pause(2500);
+    await browser.pause(3000);
 
     const targetProductText = "Teste Exercicio R$ 100";
-    const productTextSelector = `**/XCUIElementTypeOther[\`name == "productDetails"\`]/**/XCUIElementTypeStaticText[\`label CONTAINS "${targetProductText}"\`]`;
+    const productContainerSelector = "~productDetails";
     console.log(
-      `[CHAIN] Iniciando busca por texto visível: ${productTextSelector}`
+      `[FINAL] Iniciando busca por container '${productContainerSelector}' com label contendo "${targetProductText}"`
     );
 
-    let visibleProductElement = null;
-    const maxAttempts = 6;
+    let targetProductContainer = null;
+    const maxAttempts = 7;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`[CHAIN] Tentativa ${attempt}/${maxAttempts}`);
-      try {
-        visibleProductElement = await $(productTextSelector);
-        if (
-          (await visibleProductElement.isExisting()) &&
-          (await visibleProductElement.isDisplayed())
-        ) {
-          console.log(`[CHAIN] Texto visível encontrado!`);
-          break;
-        } else {
+      console.log(`[FINAL] Tentativa ${attempt}/${maxAttempts}`);
+      const productContainers = await $$(productContainerSelector);
+      console.log(
+        `[FINAL] Containers '${productContainerSelector}' encontrados nesta view: ${productContainers.length}`
+      );
+
+      for (const container of productContainers) {
+        try {
+          const currentLabel = await container.getAttribute("label");
           console.log(
-            `[CHAIN] Texto encontrado, mas não visível ou não existe.`
+            `[FINAL] Verificando container ID: ${container.elementId}, Label: "${currentLabel}"`
           );
-          visibleProductElement = null;
+          if (
+            currentLabel &&
+            currentLabel.includes(targetProductText) &&
+            (await container.isDisplayed())
+          ) {
+            console.log(`[FINAL] Container correto e visível encontrado!`);
+            targetProductContainer = container;
+            break;
+          }
+        } catch (e) {
+          console.warn(
+            `[FINAL] Erro ao processar container ${container.elementId}: ${e.message}`
+          );
         }
-      } catch (e) {
-        console.log(`[CHAIN] Texto não encontrado na tentativa ${attempt}.`);
-        visibleProductElement = null;
       }
 
-      if (!visibleProductElement && attempt < maxAttempts) {
-        console.log(`[CHAIN] Fazendo SWIPE para baixo...`);
+      if (targetProductContainer) {
+        break;
+      }
+
+      if (attempt < maxAttempts) {
+        console.log(
+          `[FINAL] Container alvo não visível. Fazendo SWIPE para baixo...`
+        );
         try {
           await driver.execute("mobile: swipe", { direction: "up" });
           await browser.pause(2500);
@@ -52,51 +66,40 @@ describe("Product Details", () => {
           );
           break;
         }
+      } else {
+        console.log(`[FINAL] Número máximo de tentativas atingido.`);
       }
     }
 
-    if (!visibleProductElement) {
-      const allProductDetails = await $$("~productDetails");
+    if (!targetProductContainer) {
       console.error(
-        `--- DEBUG: Elementos ~productDetails visíveis na tela final ---`
+        `--- DEBUG FINAL: Labels de todos os '${productContainerSelector}' encontrados ---`
       );
-      for (const pd of allProductDetails) {
+      const allContainersFinal = await $$(productContainerSelector);
+      for (const pd of allContainersFinal) {
         try {
-          if (await pd.isDisplayed()) {
-            console.error(
-              ` - Visível: ID=${pd.elementId}, Label=${await pd.getAttribute(
-                "label"
-              )}`
-            );
-          }
+          console.error(
+            ` - ID=${pd.elementId}, Label=${await pd.getAttribute(
+              "label"
+            )}, Displayed=${await pd.isDisplayed()}`
+          );
         } catch (e) {}
       }
       console.error(
         `-------------------------------------------------------------`
       );
       throw new Error(
-        `Elemento de TEXTO visível "${targetProductText}" não encontrado após ${
+        `Container do produto com texto "${targetProductText}" não foi encontrado ou não estava visível após ${
           maxAttempts - 1
         } swipes.`
       );
     }
 
-    console.log(`Texto encontrado. Tentando clicar no container pai...`);
-    let productContainer = null;
-    try {
-      const containerSelector = `//XCUIElementTypeStaticText[contains(@label, "${targetProductText}")]/ancestor::XCUIElementTypeOther[@name="productDetails"]`;
-      productContainer = await $(containerSelector);
-      await productContainer.waitForExist({ timeout: 5000 });
-      await productContainer.click();
-      console.log(`Clicou no container do produto "${targetProductText}".`);
-    } catch (clickError) {
-      console.error(
-        `Falha ao clicar no container do produto: ${clickError.message}`
-      );
-      throw new Error(
-        `Não foi possível clicar no container do produto "${targetProductText}".`
-      );
-    }
+    console.log(
+      `Clicando no container encontrado (ID: ${targetProductContainer.elementId}).`
+    );
+    await targetProductContainer.click();
+    console.log(`Clicou no container do produto "${targetProductText}".`);
 
     console.log("Verificando tela de detalhes (título)...");
     const productTitleElement = await $("~Teste Exercicio");
