@@ -2,109 +2,62 @@ import { expect, $, $$ } from "@wdio/globals";
 import homePage from "../pageobjects/home.page.js";
 import browsePage from "../pageobjects/browse.page.js";
 
-async function findAndClickProductByLabel(searchText, maxSwipes = 5) {
-  console.log(`[findAndClickProductByLabel] Procurando por "${searchText}"...`);
-  for (let i = 0; i < maxSwipes; i++) {
-    const productList = await $$(`~productDetails`);
-    console.log(
-      `[findAndClickProductByLabel] Tentativa ${i + 1}: ${
-        productList.length
-      } produtos na tela.`
-    );
-
-    for (const product of productList) {
-      let label = null;
-      try {
-        label = await product.getAttribute("label");
-      } catch (e) {
-        console.warn(
-          `[findAndClickProductByLabel] Aviso: Falha ao obter label: ${e.message}`
-        );
-        continue;
-      }
-
-      if (label && label.includes(searchText)) {
-        console.log(
-          `[findAndClickProductByLabel] Label "${searchText}" encontrado. Verificando visibilidade...`
-        );
-        if (await product.isDisplayed()) {
-          console.log(
-            `[findAndClickProductByLabel] Elemento "${searchText}" está visível. Tentando clicar...`
-          );
-          try {
-            await product.click();
-            console.log(
-              `[findAndClickProductByLabel] CLICOU COM SUCESSO em "${searchText}"`
-            );
-            return true;
-          } catch (clickError) {
-            console.error(
-              `[findAndClickProductByLabel] ERRO AO CLICAR no elemento visível: ${clickError.message}`
-            );
-            return false;
-          }
-        } else {
-          console.log(
-            `[findAndClickProductByLabel] Elemento "${searchText}" encontrado no DOM, mas NÃO VISÍVEL.`
-          );
-        }
-      }
-    }
-
-    if (i < maxSwipes - 1) {
-      console.log(
-        `[findAndClickProductByLabel] Elemento "${searchText}" não encontrado visível. Tentando swipe ${
-          i + 1
-        }/${maxSwipes}...`
-      );
-      try {
-        await driver.execute("mobile: swipe", { direction: "up" });
-        await browser.pause(1500);
-      } catch (swipeError) {
-        console.warn("WARN: mobile:swipe falhou.", swipeError.message);
-        return false;
-      }
-    } else {
-      console.log(
-        `[findAndClickProductByLabel] Limite de swipes (${maxSwipes}) atingido sem encontrar "${searchText}" visível.`
-      );
-    }
-  }
-
-  console.error(
-    `[findAndClickProductByLabel] FALHA: Não foi possível encontrar e clicar em "${searchText}" após ${maxSwipes} swipes.`
-  );
-  return false;
-}
-
 describe("Product Details", () => {
   it("should view 'Teste Exercicio R$ 100' info", async () => {
+    // --- Busca ---
     await homePage.search();
     await browsePage.searchInput.waitForDisplayed({ timeout: 10000 });
     await browsePage.searchInput.clearValue();
     await browsePage.searchInput.setValue("Teste Exercicio");
-    await browser.pause(2000);
-
-    await browser.waitUntil(
-      async () => (await $$("~productDetails")).length > 0,
-      {
-        timeout: 35000,
-        timeoutMsg: "Lista de produtos (~productDetails) não apareceu após 35s",
-      }
-    );
-    console.log("Lista de produtos (~productDetails) inicial encontrada.");
+    await browsePage.searchInput.click();
+    await browser.pause(2500);
 
     const targetProductText = "Teste Exercicio R$ 100";
-    const clicked = await findAndClickProductByLabel(targetProductText);
-    if (!clicked) {
+    const productSelector = `-ios predicate string:type == "XCUIElementTypeOther" AND name == "productDetails" AND label CONTAINS "${targetProductText}"`;
+    let productElement = $(productSelector);
+    let foundAndClicked = false;
+    const maxAttempts = 5;
+
+    console.log(`Tentando encontrar e clicar em: ${productSelector}`);
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`Tentativa ${attempt}/${maxAttempts}...`);
+      try {
+        await productElement.waitForExist({ timeout: 10000 });
+        console.log(
+          `Elemento encontrado na árvore (tentativa ${attempt}). Verificando visibilidade...`
+        );
+        await productElement.waitForDisplayed({ timeout: 10000 });
+        console.log(
+          `Elemento visível (tentativa ${attempt}). Tentando clicar...`
+        );
+        await productElement.click();
+        console.log(`CLICOU com sucesso (tentativa ${attempt}).`);
+        foundAndClicked = true;
+        break;
+      } catch (error) {
+        console.warn(`WARN: Tentativa ${attempt} falhou - ${error.message}`);
+        if (attempt < maxAttempts) {
+          console.log(`Tentando swipe para cima (scroll down)...`);
+          try {
+            await driver.execute("mobile: swipe", { direction: "up" });
+            await browser.pause(1500);
+            productElement = $(productSelector);
+          } catch (swipeError) {
+            console.warn("WARN: mobile:swipe falhou.", swipeError.message);
+            break;
+          }
+        }
+      }
+    }
+
+    if (!foundAndClicked) {
       throw new Error(
-        `FALHA CRÍTICA: Não foi possível encontrar e clicar no produto "${targetProductText}" após tentativas de scroll.`
+        `FALHA CRÍTICA: Não foi possível encontrar e clicar no produto "${targetProductText}" após ${maxAttempts} tentativas.`
       );
     }
-    console.log(`Produto "${targetProductText}" clicado com sucesso.`);
 
     console.log("Verificando tela de detalhes...");
-
     const productTitleElement = await $("~Teste Exercicio");
     await productTitleElement.waitForDisplayed({ timeout: 20000 });
     await expect(productTitleElement).toBeDisplayed();
