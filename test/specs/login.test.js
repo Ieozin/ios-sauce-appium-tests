@@ -25,26 +25,28 @@ describe("My Login application", () => {
         await profilePage.customerNameElement.waitForDisplayed({
           timeout: 5000,
         });
-        await expect(profilePage.customerNameElement).toBeDisplayed();
+        await expect(profilePage.customerNameElement).toBeDisplayed(); // Se achar, ótimo!
         console.log("Elemento CustomerName encontrado!");
       } catch (e) {
         console.warn(
-          "Elemento CustomerName não encontrado rapidamente após login, mas prosseguindo."
+          "AVISO: Elemento CustomerName não encontrado rapidamente após login, mas teste prossegue."
         );
       }
     } catch (e) {
       console.error(
-        `Falha crítica: UI não respondeu após login (Aba ${profileTabName} não ficou clicável).`
+        `Falha crítica: UI não respondeu após login (Aba ${profileTabName} não ficou clicável em 25s).`
       );
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const screenshotPath = `./errorShots/login_UI_freeze_${timestamp}.png`;
-      await driver.saveScreenshot(screenshotPath);
-      console.error(`Screenshot salvo em: ${screenshotPath}`);
+      try {
+        await driver.saveScreenshot(screenshotPath);
+        console.error(`Screenshot salvo em: ${screenshotPath}`);
+      } catch (se) {
+        console.error("Erro ao salvar screenshot:", se);
+      }
       throw e;
     }
 
-    console.log(
-      "Verificação de login concluída (assumindo sucesso se não houve erro)."
-    );
+    console.log("Verificação de login concluída.");
   });
 });

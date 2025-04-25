@@ -24,24 +24,24 @@ describe("Checkout Flow", () => {
     const targetProductText = "Teste Exercicio R$ 100";
     const productContainerSelector = "~productDetails";
     console.log(
-      `[FINAL] Iniciando busca por container '${productContainerSelector}' com label contendo "${targetProductText}"`
+      `[CORRETO] Iniciando busca por container '${productContainerSelector}' com label contendo "${targetProductText}"`
     );
 
     let targetProductContainer = null;
     const maxAttempts = 7;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`[FINAL] Tentativa ${attempt}/${maxAttempts}`);
+      console.log(`[CORRETO] Tentativa ${attempt}/${maxAttempts}`);
       const productContainers = await $$(productContainerSelector);
       console.log(
-        `[FINAL] Containers '${productContainerSelector}' encontrados nesta view: ${productContainers.length}`
+        `[CORRETO] Containers '${productContainerSelector}' encontrados: ${productContainers.length}`
       );
 
       for (const container of productContainers) {
         try {
           const currentLabel = await container.getAttribute("label");
           console.log(
-            `[FINAL] Verificando container ID: ${container.elementId}, Label: "${currentLabel}"`
+            `[CORRETO] Verificando container ID: ${container.elementId}, Label: "${currentLabel}"`
           );
 
           if (
@@ -49,14 +49,16 @@ describe("Checkout Flow", () => {
             currentLabel.includes(targetProductText) &&
             (await container.isDisplayed())
           ) {
-            console.log(`[FINAL] Container correto e visível encontrado!`);
+            console.log(`[CORRETO] Container correto e visível encontrado!`);
             targetProductContainer = container;
             break;
           }
         } catch (e) {
-          console.warn(
-            `[FINAL] Erro ao processar container ${container.elementId}: ${e.message}`
-          );
+          if (!e.message.includes("stale element reference")) {
+            console.warn(
+              `[CORRETO] Erro ao processar container ${container.elementId}: ${e.message}`
+            );
+          }
         }
       }
 
@@ -66,7 +68,7 @@ describe("Checkout Flow", () => {
 
       if (attempt < maxAttempts) {
         console.log(
-          `[FINAL] Container alvo não visível. Fazendo SWIPE para baixo...`
+          `[CORRETO] Container alvo não visível. Fazendo SWIPE para baixo...`
         );
         try {
           await driver.execute("mobile: swipe", { direction: "up" });
@@ -78,7 +80,7 @@ describe("Checkout Flow", () => {
           break;
         }
       } else {
-        console.log(`[FINAL] Número máximo de tentativas atingido.`);
+        console.log(`[CORRETO] Número máximo de tentativas atingido.`);
       }
     }
 
@@ -107,7 +109,7 @@ describe("Checkout Flow", () => {
     }
 
     console.log(
-      `Clicando no container encontrado (ID: ${targetProductContainer.elementId}).`
+      `Clicando no container visível encontrado (ID: ${targetProductContainer.elementId}).`
     );
     await targetProductContainer.click();
     console.log(`Clicou no container do produto "${targetProductText}".`);
